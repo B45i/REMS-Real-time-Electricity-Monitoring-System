@@ -14,8 +14,8 @@ int pin2 = D2;
 
 int reading = 100;
 
-const char *ssid     = "REMS";
-const char *password = "helloworld";
+const char *ssid     = "www.amalshajan.me";
+const char *password = "amalshajan.me";
 
 ESP8266WebServer server(80);
 
@@ -304,10 +304,24 @@ void drawValue() {
 void drawString(String str) {
 		display.clear();
 		display.setTextAlignment(TEXT_ALIGN_LEFT);
-		display.setFont(ArialMT_Plain_10);
+		display.setFont(ArialMT_Plain_16);
 		display.drawString(0, 10, str);
 		display.display();
-		delay(1000);
+		delay(5000);
+}
+
+void setupWiFi(){
+	Serial.print("Connecting to ");
+	Serial.println(ssid);
+
+	WiFi.begin(ssid, password);
+
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	}
+	Serial.println("");
+	Serial.println("WiFi connected");
 }
 
 void setup() {
@@ -321,12 +335,12 @@ void setup() {
 
 	delay(1000);
 
-	Serial.print("Configuring access point...");
-	drawString("Configuring access point...");
-	WiFi.softAP(ssid);
+	//Serial.print("Configuring access point...");
+	//drawString("Configuring access point...");
+	//WiFi.softAP(ssid);
 	//WiFi.softAP(ssid, password);
-
-	IPAddress myIP = WiFi.softAPIP();
+	setupWiFi();
+	IPAddress myIP = WiFi.localIP();
 	Serial.print("AP IP address: ");
 	Serial.println(myIP);
 	drawString("IP address: "+String(myIP));

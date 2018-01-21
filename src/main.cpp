@@ -12,7 +12,9 @@ D5 -> SCL
 int pin1 = D1;
 int pin2 = D2;
 
-int reading = 100;
+int onFlag = 0;
+
+int reading = 0;
 
 const char *ssid     = "www.amalshajan.me";
 const char *password = "amalshajan.me";
@@ -262,7 +264,7 @@ void handleRoot() {
 		"\t\t\t\txhttp.onreadystatechange = function() {\n"
 		"    \t\t\t\tif (this.readyState == 4 && this.status == 200) {\n"
 		"      \t\t\t\t\tlet reading = parseInt(this.responseText);\n"
-		"\t\t\t\t\t\tdocument.getElementById(\"reading\").innerHTML = \"Reading : \"+reading;\n"
+		"\t\t\t\t\t\tdocument.getElementById(\"reading\").innerHTML = \"Reading : \"+reading+\" KWm\";\n"
 		"\t\t\t\t\t\tdocument.getElementById(\"cost\").innerHTML = \"Cost : Rs. \"+reading/5;\n"
 		"    \t\t\t\t}\n"
 		"\t\t\t\t}\n"
@@ -279,11 +281,13 @@ void handleRoot() {
 
 void handelePinOneOn() {
 	digitalWrite(pin1, HIGH);
+	onFlag = 1;
 	server.send(200, "text/html", "Pin one turned on");
 }
 
 void handelePinOneOff() {
 	digitalWrite(pin1, LOW);
+	onFlag = 0;
 	server.send(200, "text/html", "Pin one turned off");
 }
 
@@ -313,15 +317,20 @@ void drawString(String str) {
 void setupWiFi(){
 	Serial.print("Connecting to ");
 	Serial.println(ssid);
-
 	WiFi.begin(ssid, password);
-
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
 		Serial.print(".");
 	}
 	Serial.println("");
 	Serial.println("WiFi connected");
+}
+
+int calCurrent() {
+	if(!onFlag) {
+		return 0;
+	}
+	return (analogRead(A0) * 220)/60;
 }
 
 void setup() {
@@ -357,7 +366,7 @@ void setup() {
 }
 
 void loop() {
-	reading += analogRead(A0);
+	reading += calCurrent();
 	drawValue();
 	server.handleClient();
 }
